@@ -28,12 +28,11 @@
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
             <uses-permission android:name="android.permission.INTERNET" />
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
         </config-file>
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <service
-            android:name="com.clicktale.clicktalesdk.CTService"
-            android:enabled="true"/>
+                android:name="com.clicktale.clicktalesdk.CTService"
+                android:enabled="true"/>
             <receiver
                 android:name="com.clicktale.clicktalesdk.CTWifiReceiver"
                 android:enabled="false">
