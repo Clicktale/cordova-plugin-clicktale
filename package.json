@@ -1,0 +1,21 @@
+{
+  "name": "Clicktale",
+  "version": "2.2.0",
+  "description": "Clicktale for Apps",
+  "cordova": {
+    "id": "cordova-plugin-clicktale",
+    "platforms": [
+      "ios",
+      "android"
+    ]
+  },
+  "keywords": [
+    "clicktale",
+    "ecosystem:cordova",
+    "cordova-ios",
+    "cordova-android",
+    "analytics"
+  ],
+  "author": "Clicktale",
+  "license": "Commercial"
+}

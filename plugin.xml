@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="cordova-plugin-clicktale" version="2.1.10" xmlns="http://apache.org/cordova/ns/plugins/1.0">
+    <name>ClicktalePlugin</name>
+    <description>Clicktale for Apps</description>
+    <license>Commercial</license>
+    <keywords>clicktale</keywords>
+    <js-module name="ClicktalePlugin" src="www/ClicktalePlugin.js">
+        <clobbers target="ClicktalePlugin" />
+    </js-module>
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="ClicktalePlugin">
+                <param name="ios-package" value="ClicktalePlugin" />
+            </feature>
+        </config-file>
+        <header-file src="src/ios/ClicktalePlugin.h" />
+        <source-file src="src/ios/ClicktalePlugin.m" />
+        <framework src="src/ios/Clicktale.framework" custom="true" embed="true"/>
+    </platform>
+    <platform name="android">
+        <config-file parent="/*" target="config.xml">
+            <feature name="ClicktalePlugin">
+                <param name="android-package" value="com.clicktale.cordova.ClicktalePlugin" />
+            </feature>
+        </config-file>
+        <source-file src="src/android/clicktale.jar" target-dir="libs" framework="true" />
+        <source-file src="src/android/ClicktalePlugin.java" target-dir="src/com/clicktale/cordova" />
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+        </config-file>
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <service
+            android:name="com.clicktale.clicktalesdk.CTService"
+            android:enabled="true"/>
+            <receiver
+                android:name="com.clicktale.clicktalesdk.CTWifiReceiver"
+                android:enabled="false">
+                <intent-filter>
+                    <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                </intent-filter>
+            </receiver>
+        </config-file>
+        <framework src="com.google.code.gson:gson:2.7" />
+        <framework src="com.android.support:support-v4:25.3.1" />
+    </platform>
+</plugin>
