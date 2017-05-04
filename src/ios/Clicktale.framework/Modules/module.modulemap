@@ -1,0 +1,6 @@
+framework module Clicktale {
+  umbrella header "Clicktale.h"
+
+  export *
+  module * { export * }
+}
