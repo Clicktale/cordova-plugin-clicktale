@@ -4,7 +4,7 @@
 //
 //  Created by Omer Blumenkrunz on 22/12/2016.
 //  Copyright (c) 2017 Clicktale, Inc. All rights reserved.
-//  Version : 2.1.10
+//  Version : 2.1.11
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -32,6 +32,8 @@ typedef enum CT_QUALITY
     CT_QUALITY_HD
 }CT_QUALITY;
 
+
+#define kCTClicktaleBackgroundDataFlushFinish  @"ClicktaleBackgroundDataFlushFinish"
 
 @protocol ClicktaleDelegate <NSObject>
 @optional
@@ -346,7 +348,7 @@ typedef enum CT_QUALITY
 /**
  Set Debug Mode on/off
  When debug mode on,the SDK will save videos to Photos Album before uploading it to server
- (15 seconds after application goes to background)
+ (1 second after application goes to background)
  
  @param on BOOL YES- Debug mode on/ NO- Debug mode off - default is NO
  
@@ -366,6 +368,44 @@ typedef enum CT_QUALITY
 
  */
 -(void)setCrashReporterOff;
+
+/**
+ Sends data to Clicktale in background fetch.
+ In order to improve data and video delivery to Clicktale
+ you can call this method from background fetch method in your AppDelegate:
+ 
+ Objective-C:
+ - (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler;
+
+ Swift:
+ optional func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void)
+ 
+ Be sure to enable background fetching and to check Background fetch in the Capabilities tab, and in addition call:
+
+ Objective-C:
+ [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
+ 
+ Swift:
+ UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
+
+ In your AppDelegate at:
+ 
+ Objective-C:
+ - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
+
+ Swift:
+ func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+
+
+ @param completionHandler The Background Fetch completionHandler you recived from performFetchWithCompletionHandler
+ 
+ Upon data transfer complete we will call the completion handler.
+ If nil is passed instead of the completion handler, Clicktale will not call it and then you should call the completionHandler yourself,
+ Clicktale will post a notification upon finish of the logic. Notification name is kCTClicktaleBackgroundDataFlushFinish.
+ 
+ @see [Advanced Features](http://apps-docs.clicktale.com/ios/advanced-features.html)
+ 
+ */
+-(void)flushDataInBackgroundWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler;
+
 @end
-
-
