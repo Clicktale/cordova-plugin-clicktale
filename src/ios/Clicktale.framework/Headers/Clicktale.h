@@ -4,7 +4,7 @@
 //
 //  Created by Omer Blumenkrunz on 22/12/2016.
 //  Copyright (c) 2017 Clicktale, Inc. All rights reserved.
-//  Version : 2.1.14
+//  Version : 2.1.15
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
