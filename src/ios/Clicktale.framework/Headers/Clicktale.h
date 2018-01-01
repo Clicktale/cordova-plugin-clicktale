@@ -4,7 +4,7 @@
 //
 //  Created by Omer Blumenkrunz on 22/12/2016.
 //  Copyright (c) 2017 Clicktale, Inc. All rights reserved.
-//  Version : 2.1.15
+//  Version : 2.1.16
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -73,7 +73,6 @@ typedef enum CT_QUALITY
 
 @property(nonatomic, strong) NSString *accessKey;
 @property(nonatomic, strong) NSString *secretKey;
-@property(nonatomic, strong) NSDictionary *userDefinedDictionary;
 @property(nonatomic, strong) NSString *userID;
 
 @property(nonatomic, readonly) NSString *SDKVersion;
@@ -118,13 +117,6 @@ typedef enum CT_QUALITY
  
  */
 -(void)setSessionUserID:(NSString *)userID;
-
-/**
- Sets a user defined dictionary for every session.
- 
- @param dict NSDictionary The custom data you want to set for this session.
- */
--(void)setPreDefinedDictionaryForSession:(NSDictionary *)dict;
 
 /**
  Pause Screen Recording

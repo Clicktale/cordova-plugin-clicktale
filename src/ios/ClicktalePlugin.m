@@ -34,6 +34,7 @@ const NSInteger kClicktaleError_No_SessionID  = -1;
         [[Clicktale sharedInstance] setAccessKey:accessKey secretKey:secretKey];
         [[Clicktale sharedInstance] startClicktale];
         [[Clicktale sharedInstance] setDelegate:self];
+        [[Clicktale sharedInstance] startPrivacyForWebViews:@[self.webView]];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:YES];
     }
     
