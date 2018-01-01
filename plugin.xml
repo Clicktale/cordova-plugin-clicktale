@@ -30,12 +30,13 @@
             <uses-permission android:name="android.permission.INTERNET" />
         </config-file>
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <service android:name="com.clicktale.clicktalesdk.CTService"/>
             <service
-                android:name="com.clicktale.clicktalesdk.CTService"
-                android:enabled="true"/>
+                    android:name="com.clicktale.clicktalesdk.CTJobService"
+                    android:permission="android.permission.BIND_JOB_SERVICE"/>
             <receiver
-                android:name="com.clicktale.clicktalesdk.CTWifiReceiver"
-                android:enabled="false">
+                    android:name="com.clicktale.clicktalesdk.CTWifiReceiver"
+                    android:enabled="false">
                 <intent-filter>
                     <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
                 </intent-filter>

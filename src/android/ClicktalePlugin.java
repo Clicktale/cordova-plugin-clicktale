@@ -1,12 +1,16 @@
 package com.clicktale.cordova;
 
+import android.os.Handler;
 import android.util.Log;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 
 import com.clicktale.clicktalesdk.Clicktale;
 import com.clicktale.clicktalesdk.ClicktaleCallback;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,6 +22,7 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
 
     private static final int ERROR_CODE_UNKNOWN_ERROR = -1;
     private static final int ERROR_CODE_INVALID_ARGS = -2;
+    private static Handler uiHandler;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -82,11 +87,36 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
                 return;
             }
             Clicktale.start(ClicktalePlugin.this.cordova.getActivity(), this, accessKey, secretKey);
+
+            setWebView();
+
             callbackContext.success();
         } catch (Exception e) {
             e.printStackTrace();
             callbackContext.error(ERROR_CODE_UNKNOWN_ERROR);
         }
+    }
+
+    private void setWebView() {
+        if(uiHandler == null) {
+            uiHandler = new Handler(ClicktalePlugin.this.cordova.getContext().getMainLooper());
+        }
+
+        uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                CordovaWebView webViewHolder = ClicktalePlugin.this.webView;
+
+                if(webViewHolder == null){
+                    return;
+                }
+
+                WebView webView = (WebView) webViewHolder.getView();
+                WebSettings settings = webView.getSettings();
+                settings.setJavaScriptEnabled(true);
+                Clicktale.setWebView(webView);
+            }
+        });
     }
 
 
@@ -193,6 +223,7 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
     }
 
     private void logPageView(final JSONArray args, final CallbackContext callbackContext) {
+
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
