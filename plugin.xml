@@ -23,7 +23,7 @@
                 <param name="android-package" value="com.clicktale.cordova.ClicktalePlugin" />
             </feature>
         </config-file>
-        <source-file src="src/android/clicktale.jar" target-dir="libs" framework="true" />
+        <source-file src="src/android/clicktale.jar" target-dir="app/libs" framework="true" />
         <source-file src="src/android/ClicktalePlugin.java" target-dir="src/com/clicktale/cordova" />
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

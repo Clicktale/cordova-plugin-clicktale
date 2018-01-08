@@ -1,6 +1,5 @@
 package com.clicktale.cordova;
 
-import android.os.Handler;
 import android.util.Log;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -9,6 +8,7 @@ import com.clicktale.clicktalesdk.Clicktale;
 import com.clicktale.clicktalesdk.ClicktaleCallback;
 
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
@@ -22,7 +22,7 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
 
     private static final int ERROR_CODE_UNKNOWN_ERROR = -1;
     private static final int ERROR_CODE_INVALID_ARGS = -2;
-    private static Handler uiHandler;
+    private boolean isDestroyed;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -86,8 +86,8 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
                 callbackContext.error(ERROR_CODE_INVALID_ARGS);
                 return;
             }
-            Clicktale.start(ClicktalePlugin.this.cordova.getActivity(), this, accessKey, secretKey);
 
+            Clicktale.start(ClicktalePlugin.this.cordova.getActivity(), this, accessKey, secretKey);
             setWebView();
 
             callbackContext.success();
@@ -97,21 +97,23 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         }
     }
 
-    private void setWebView() {
-        if(uiHandler == null) {
-            uiHandler = new Handler(ClicktalePlugin.this.cordova.getContext().getMainLooper());
-        }
+    @Override
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        super.initialize(cordova, webView);
+        Clicktale.setClicktaleCallback(ClicktalePlugin.this);
+        setWebView();
+    }
 
-        uiHandler.post(new Runnable() {
+    @Override
+    public void onResume(boolean multitasking) {
+        setWebView();
+    }
+
+    private void setWebView() {
+        ClicktalePlugin.this.cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                CordovaWebView webViewHolder = ClicktalePlugin.this.webView;
-
-                if(webViewHolder == null){
-                    return;
-                }
-
-                WebView webView = (WebView) webViewHolder.getView();
+                WebView webView = (WebView) ClicktalePlugin.this.webView.getView();
                 WebSettings settings = webView.getSettings();
                 settings.setJavaScriptEnabled(true);
                 Clicktale.setWebView(webView);
@@ -121,7 +123,7 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
 
 
     private void setDevMode(final JSONArray args, final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
+        cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -223,7 +225,6 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
     }
 
     private void logPageView(final JSONArray args, final CallbackContext callbackContext) {
-
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
@@ -337,8 +338,19 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
     }
 
     @Override
+    public void onStart() {
+        isDestroyed = false;
+    }
+
+    @Override
+    public void onDestroy() {
+        isDestroyed = true;
+        Clicktale.setWebView(null);
+    }
+
+    @Override
     public void onSessionURLCreated(String sessionLink) {
-        if (sessionLink == null) {
+        if (sessionLink == null || isDestroyed) {
             return;
         }
         HashMap<String, String> map = new HashMap<String, String>();
@@ -355,7 +367,7 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
 
     @Override
     public void onSessionIDCreated(String sessionID) {
-        if (sessionID == null) {
+        if (sessionID == null || isDestroyed) {
             return;
         }
         HashMap<String, String> map = new HashMap<String, String>();
