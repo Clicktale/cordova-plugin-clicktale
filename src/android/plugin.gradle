@@ -1,0 +1,10 @@
+repositories {
+    maven {
+           url "https://androidsdk.clicktale.com/artifactory/libs-release-local"
+    }
+
+}
+
+dependencies {
+    compile 'com.clicktale.library:sdk:+'
+}
