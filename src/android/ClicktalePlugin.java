@@ -1,16 +1,15 @@
 package com.clicktale.cordova;
 
 import android.util.Log;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
 
 import com.clicktale.clicktalesdk.Clicktale;
 import com.clicktale.clicktalesdk.ClicktaleCallback;
+import com.clicktale.clicktalesdk.Region;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,8 +27,8 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         android.util.Log.d(TAG, "execute() called with: " + "action = [" + action + "], args = [" + args + "], callbackContext = [" + callbackContext + "]");
         try {
-            if (action.equals("startClicktale")) {
-                this.start(args, callbackContext);
+            if (action.equals("startClicktaleForRegion")) {
+                this.startForRegion(args, callbackContext);
                 return true;
             } else if (action.equals("setDebugLogLevelOn")) {
                 this.setDevMode(args, callbackContext);
@@ -42,9 +41,6 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
                 return true;
             } else if (action.equals("trackEvent")) {
                 this.logEvent(args, callbackContext);
-                return true;
-            } else if (action.equals("trackEventAndValue")) {
-                this.logEventAndValue(args, callbackContext);
                 return true;
             } else if (action.equals("trackPageView")) {
                 this.logPageView(args, callbackContext);
@@ -67,6 +63,12 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
             } else if (action.equals("setCrashReporterOff")) {
                 this.setCrashReporterOff(args, callbackContext);
                 return true;
+            } else if (action.equals("setOptOut")) {
+                this.setOptOut(args, callbackContext);
+                return true;
+            } else if (action.equals("isOptOut")) {
+                this.isOptOut(callbackContext);
+                return true;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -76,51 +78,20 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         return false;
     }
 
-    private void start(final JSONArray args, final CallbackContext callbackContext) {
+    private void startForRegion(final JSONArray args, final CallbackContext callbackContext) {
         try {
-            String accessKey = args.optString(0, null);
-            String secretKey = args.optString(1, null);
+            long projectId = args.optLong(0);
+            long applicationId = args.optLong(1);
+            long regionId = args.optLong(2);
 
-            if (accessKey == null || secretKey == null) {
-                Log.e(TAG, "start: invalid access key or secret key");
-                callbackContext.error(ERROR_CODE_INVALID_ARGS);
-                return;
-            }
-
-            Clicktale.start(ClicktalePlugin.this.cordova.getActivity(), this, accessKey, secretKey);
-            setWebView();
-
+            Clicktale.startForRegion(ClicktalePlugin.this.cordova.getActivity(), applicationId, projectId, regionId == 1 ? Region.US : Region.EUROPE);
+            Clicktale.setClicktaleCallback(ClicktalePlugin.this);
             callbackContext.success();
         } catch (Exception e) {
             e.printStackTrace();
             callbackContext.error(ERROR_CODE_UNKNOWN_ERROR);
         }
     }
-
-    @Override
-    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
-        super.initialize(cordova, webView);
-        Clicktale.setClicktaleCallback(ClicktalePlugin.this);
-        setWebView();
-    }
-
-    @Override
-    public void onResume(boolean multitasking) {
-        setWebView();
-    }
-
-    private void setWebView() {
-        ClicktalePlugin.this.cordova.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                WebView webView = (WebView) ClicktalePlugin.this.webView.getView();
-                WebSettings settings = webView.getSettings();
-                settings.setJavaScriptEnabled(true);
-                Clicktale.setWebView(webView);
-            }
-        });
-    }
-
 
     private void setDevMode(final JSONArray args, final CallbackContext callbackContext) {
         cordova.getActivity().runOnUiThread(new Runnable() {
@@ -167,7 +138,7 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
                         return;
                     }
 
-                    Clicktale.setUsedId(userId);
+                    Clicktale.setUserId(userId);
                     callbackContext.success();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -191,30 +162,6 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
                     }
 
                     Clicktale.logEvent(event);
-                    callbackContext.success();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    callbackContext.error(ERROR_CODE_UNKNOWN_ERROR);
-                }
-            }
-        });
-    }
-
-    private void logEventAndValue(final JSONArray args, final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String event = args.optString(0, null);
-                    String value = args.optString(1, null);
-
-                    if (event == null || value == null) {
-                        Log.e(TAG, "logEvent: invalid event name or event value");
-                        callbackContext.error(ERROR_CODE_INVALID_ARGS);
-                        return;
-                    }
-
-                    Clicktale.logEvent(event, value);
                     callbackContext.success();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -337,6 +284,35 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         });
     }
 
+    private void setOptOut(JSONArray args, final CallbackContext callbackContext) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Clicktale.setOptOut(args.getBoolean(0));
+                    callbackContext.success();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    callbackContext.error(ERROR_CODE_UNKNOWN_ERROR);
+                }
+            }
+        });
+    }
+
+    private void isOptOut(final CallbackContext callbackContext) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, Clicktale.isOptOut()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    callbackContext.error(ERROR_CODE_UNKNOWN_ERROR);
+                }
+            }
+        });
+    }
+
     @Override
     public void onStart() {
         isDestroyed = false;
@@ -345,7 +321,6 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
     @Override
     public void onDestroy() {
         isDestroyed = true;
-        Clicktale.setWebView(null);
     }
 
     @Override
@@ -381,6 +356,5 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
             }
         });
     }
-
 }
 

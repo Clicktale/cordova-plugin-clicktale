@@ -4,7 +4,7 @@
 //
 //  Created by Omer Blumenkrunz on 22/12/2016.
 //  Copyright (c) 2017 Clicktale, Inc. All rights reserved.
-//  Version : 2.1.18
+//  Version : 2.2.0
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -31,6 +31,12 @@ typedef enum CT_QUALITY
     CT_QUALITY_HIGH_PLUS,
     CT_QUALITY_HD
 }CT_QUALITY;
+
+typedef enum CT_REGION
+{
+    CT_REGION_US,
+    CT_REGION_EU
+}CT_REGION;
 
 
 #define kCTClicktaleBackgroundDataFlushFinish  @"ClicktaleBackgroundDataFlushFinish"
@@ -108,6 +114,26 @@ typedef enum CT_QUALITY
  */
 -(void)startClicktale;
 
+
+/**
+ *Sets Clicktale Project and Application ID
+ *
+ *@param projectId      NSNumber Clicktale Project ID.
+ *@param applicationId  NSNumber Clicktale Application ID.
+ 
+ @see [Getting Started](http://apps-docs.clicktale.com/ios/getting-started.html)
+ 
+ */
+-(void)setProjectId:(NSNumber *)projectId applicationId:(NSNumber *)applicationId;
+
+/**
+ Starts SDK to record and track all events with the backend endpoint region : US or EU.
+ 
+ @see [Getting Started](http://apps-docs.clicktale.com/ios/getting-started.html)
+ 
+ */
+-(void)startClicktaleForRegion:(CT_REGION)region;
+
 /**
  Sets a UserID, so you can easily find sessions in the dashboard
  
@@ -181,18 +207,7 @@ typedef enum CT_QUALITY
  @see [Using Events](http://apps-docs.clicktale.com/ios/using-events.html)
 
  */
--(void)trackEvent:(NSString *)event value:(NSString *)value;
-
-/**
- A custom track event method.
- Log geo location with this function
- 
- @param location CLLocation laction data.
- 
- @see [Advanced Features](http://apps-docs.clicktale.com/ios/advanced-features.html)
-
- */
--(void)trackGeoLocation:(CLLocation *)location;
+-(void)trackEvent:(NSString *)event value:(NSString *)value __attribute__((deprecated("This method is deprecated, Please use trackEvent:")));
 
 /**
  Bind a WKWebView (UIWebView not supported) to SDK in order to receive and track events.
@@ -239,7 +254,7 @@ typedef enum CT_QUALITY
 -(BOOL)isScreenHidden;
 
 /**
- Start hiding UIView & UITextField collection
+ Start hiding UIView collection
  
  @param views NSArray array of views you want to hide.
  
@@ -249,7 +264,7 @@ typedef enum CT_QUALITY
 -(void)startPrivacyForViews:(NSArray <UIView *> *)views;
 
 /**
- Stop hiding  UIView & UITextField
+ Stop hiding UIView collection
  
  @param views NSArray array of views you want to stop hiding.
  
@@ -259,7 +274,7 @@ typedef enum CT_QUALITY
 -(void)stopPrivacyForViews:(NSArray <UIView *> *)views;
 
 /**
- Stop hiding All  UIView & UITextField collection
+ Stop hiding All UIView that was added
  
  @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
 
@@ -275,7 +290,7 @@ typedef enum CT_QUALITY
  @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
 
  */
--(void)startPrivacyForWebViews:(NSArray *)views;
+-(void)startPrivacyForWebViews:(NSArray *)views __attribute__((deprecated("The SDK detects webviews automatically")));
 
 /**
  Stop hiding WebViews
@@ -293,15 +308,42 @@ typedef enum CT_QUALITY
  @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
 
  */
--(void)stopPrivacyForAllWebViews;
+-(void)stopPrivacyForAllWebViews __attribute__((deprecated("The SDK detects webviews automatically")));
 
 /**
- Stop hiding All UIViews and UITextfields and WebViews collection you added
+ Stop hiding All UIViews collection you added
  
  @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
 
  */
 -(void)stopPrivacyForAll;
+
+/**
+ Disable auto hiding for selected UITextField, UITextView and SFSafariViewController collection
+ 
+ @param views NSArray array of UITextField/UITextView you want to show and prevent the sdk from auto hidding.
+ 
+ @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
+ 
+ */
+-(void)exposeAutoHiddenViews:(NSArray <UIView *> *)views;
+
+
+/**
+ Offers the option to opt out \ opt in from being recorded and tracked
+ 
+ @param isOptOut BOOL flag to set the optout status (default is NO).
+
+ */
+-(void)setOptOut:(BOOL)isOptOut;
+
+/**
+ Get the current optout status (default is NO).
+ 
+ @return BOOL is user optout
+ 
+ */
+-(BOOL)isOptOut;
 
 #pragma mark Util methods
 #pragma mark ----------------------

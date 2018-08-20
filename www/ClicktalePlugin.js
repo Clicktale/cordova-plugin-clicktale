@@ -12,6 +12,10 @@ exports.startClicktale = function(accessKey, secretKey, success, error) {
     exec(success, error, "ClicktalePlugin", "startClicktale", [accessKey,secretKey]);
 };
 
+exports.startClicktaleForRegion = function(projectId, applicationId,region, success, error) {
+       exec(success, error, "ClicktalePlugin", "startClicktaleForRegion", [projectId,applicationId,region]);
+};
+
 exports.setDebugLogLevelOn = function(logLevelOn, success, error) {
     exec(success, error, "ClicktalePlugin", "setDebugLogLevelOn", [logLevelOn]);
 };
@@ -24,12 +28,16 @@ exports.setSessionUserID = function(userID, success, error) {
     exec(success, error, "ClicktalePlugin", "setSessionUserID", [userID]);
 };
 
-exports.trackEvent = function(eventName, success, error) {
-    exec(success, error, "ClicktalePlugin", "trackEvent", [eventName]);
+exports.setOptOut = function(isOptOut, success, error) {
+    exec(success, error, "ClicktalePlugin", "setOptOut", [isOptOut]);
 };
 
-exports.trackEventAndValue = function(eventName,eventValue, success, error) {
-    exec(success, error, "ClicktalePlugin", "trackEventAndValue", [eventName,eventValue]);
+exports.isOptOut = function(success, error) {
+        exec(success, error, "ClicktalePlugin", "isOptOut", []);
+};
+
+exports.trackEvent = function(eventName, success, error) {
+    exec(success, error, "ClicktalePlugin", "trackEvent", [eventName]);
 };
 
 exports.trackPageView = function(pageName, success, error) {

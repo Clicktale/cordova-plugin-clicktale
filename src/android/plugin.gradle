@@ -6,5 +6,5 @@ repositories {
 }
 
 dependencies {
-    compile 'com.clicktale.library:sdk:2.6.4'
+    compile 'com.clicktale.library:sdk:2.7.1'
 }

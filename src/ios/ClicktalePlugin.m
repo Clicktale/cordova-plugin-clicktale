@@ -13,29 +13,50 @@
 const NSInteger kClicktaleError_Invalid_Arguments  = -2;
 const NSInteger kClicktaleError_No_SessionID  = -1;
 
+const NSInteger kClicktaleRegion_US  = 1;
+const NSInteger kClicktaleRegion_EU  = 2;
+
+
 @interface ClicktalePlugin() <ClicktaleDelegate>
 @end
 
 @implementation ClicktalePlugin
 
-- (void)startClicktale:(CDVInvokedUrlCommand*)command
+- (void)startClicktaleForRegion:(CDVInvokedUrlCommand*)command
 {
-    NSString *accessKey = [command argumentAtIndex:0 withDefault:@"" andClass:[NSString class]];
-    NSString *secretKey = [command argumentAtIndex:1 withDefault:@"" andClass:[NSString class]];
+    NSNumber *projectId      = [command argumentAtIndex:0 withDefault:@"" andClass:[NSNumber class]];
+    NSNumber *applicationId  = [command argumentAtIndex:1 withDefault:@"" andClass:[NSNumber class]];
+    NSNumber *region         = [command argumentAtIndex:2 withDefault:@"" andClass:[NSNumber class]];
     
     CDVPluginResult* pluginResult = nil;
+    CT_REGION ctRegoin = CT_REGION_US;
     
-    if(accessKey == nil || secretKey == nil || [accessKey isEqualToString:@""]  || [secretKey isEqualToString:@""])
+    if(applicationId == nil || projectId == nil || region == nil || [applicationId intValue] == 0 || [projectId intValue] == 0 || [region intValue] == 0)
     {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsNSInteger:kClicktaleError_Invalid_Arguments];
     }
     else
     {
-        [[Clicktale sharedInstance] setAccessKey:accessKey secretKey:secretKey];
-        [[Clicktale sharedInstance] startClicktale];
-        [[Clicktale sharedInstance] setDelegate:self];
-        [[Clicktale sharedInstance] startPrivacyForWebViews:@[self.webView]];
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:YES];
+        if([region intValue] == kClicktaleRegion_US || [region intValue] == kClicktaleRegion_EU)
+        {
+            if([region intValue] == kClicktaleRegion_US)
+            {
+                ctRegoin = CT_REGION_US;
+            }
+            else if([region intValue] == kClicktaleRegion_EU)
+            {
+                ctRegoin = CT_REGION_EU;
+            }
+            
+            [[Clicktale sharedInstance] setProjectId:projectId applicationId:applicationId];
+            [[Clicktale sharedInstance] startClicktaleForRegion:ctRegoin];
+            [[Clicktale sharedInstance] setDelegate:self];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:YES];
+        }
+        else
+        {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsNSInteger:kClicktaleError_Invalid_Arguments];
+        }
     }
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -112,6 +133,38 @@ const NSInteger kClicktaleError_No_SessionID  = -1;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)setOptOut:(CDVInvokedUrlCommand*)command
+{
+    NSNumber *isOptOut = [command argumentAtIndex:0 withDefault:[NSNumber numberWithInteger:0] andClass:[NSNumber class]];
+    
+    CDVPluginResult* pluginResult = nil;
+    
+    if(isOptOut == nil || ![isOptOut isKindOfClass:[NSNumber class]])
+    {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsNSInteger:kClicktaleError_Invalid_Arguments];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+    
+    if([isOptOut boolValue] == YES)
+    {
+        [[Clicktale sharedInstance] setOptOut:YES];
+    }
+    else
+    {
+        [[Clicktale sharedInstance] setOptOut:NO];
+    }
+    
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:YES];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)isOptOut:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:[[Clicktale sharedInstance] isOptOut]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void)trackEvent:(CDVInvokedUrlCommand*)command
 {
     NSString *eventName = [command argumentAtIndex:0 withDefault:@"" andClass:[NSString class]];
@@ -125,26 +178,6 @@ const NSInteger kClicktaleError_No_SessionID  = -1;
     else
     {
         [[Clicktale sharedInstance] trackEvent:eventName];
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:YES];
-    }
-    
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
-
-- (void)trackEventAndValue:(CDVInvokedUrlCommand*)command
-{
-    NSString *eventName  = [command argumentAtIndex:0 withDefault:@"" andClass:[NSString class]];
-    NSString *eventValue = [command argumentAtIndex:1 withDefault:@"" andClass:[NSString class]];
-    
-    CDVPluginResult* pluginResult = nil;
-    
-    if(eventName == nil || eventValue == nil || [eventName isEqualToString:@""]  || [eventValue isEqualToString:@""])
-    {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsNSInteger:kClicktaleError_Invalid_Arguments];
-    }
-    else
-    {
-        [[Clicktale sharedInstance] trackEvent:eventName value:eventValue];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:YES];
     }
     

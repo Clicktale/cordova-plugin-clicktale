@@ -11,12 +11,13 @@
 
 @interface ClicktalePlugin : CDVPlugin
 
-- (void)startClicktale:(CDVInvokedUrlCommand*)command;
+- (void)startClicktaleForRegion:(CDVInvokedUrlCommand*)command;
 - (void)setDebugLogLevelOn:(CDVInvokedUrlCommand*)command;
 - (void)setVideoTestMode:(CDVInvokedUrlCommand*)command;
 - (void)setSessionUserID:(CDVInvokedUrlCommand*)command;
+- (void)setOptOut:(CDVInvokedUrlCommand*)command;
+- (void)isOptOut:(CDVInvokedUrlCommand*)command;
 - (void)trackEvent:(CDVInvokedUrlCommand*)command;
-- (void)trackEventAndValue:(CDVInvokedUrlCommand*)command;
 - (void)trackPageView:(CDVInvokedUrlCommand*)command;
 - (void)startHidingScreen:(CDVInvokedUrlCommand*)command;
 - (void)stopHidingScreen:(CDVInvokedUrlCommand*)command;
