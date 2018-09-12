@@ -284,7 +284,7 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         });
     }
 
-    private void setOptOut(JSONArray args, final CallbackContext callbackContext) {
+    private void setOptOut(final JSONArray args, final CallbackContext callbackContext) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
