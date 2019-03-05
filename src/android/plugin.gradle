@@ -1,10 +1,13 @@
+def sdkVersion = '3.0.+'
+def sdkRepo = 'release'
+
 repositories {
     maven {
-           url "https://androidsdk.clicktale.com/artifactory/libs-release-local"
+           url "https://androidsdk.clicktale.com/artifactory/$sdkRepo"
     }
 
 }
 
 dependencies {
-    compile 'com.clicktale.library:sdk:2.7.2'
+    compile "com.clicktale.library:sdk:$sdkVersion"
 }

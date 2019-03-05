@@ -2,444 +2,50 @@
 //  Clicktale.h
 //  Clicktale
 //
-//  Created by Omer Blumenkrunz on 22/12/2016.
-//  Copyright (c) 2017 Clicktale, Inc. All rights reserved.
-//  Version : 2.2.0
+//  Created by outsource on 04/11/2018.
+//  Copyright © 2018 outsource. All rights reserved.
+//
 
-#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-@class CLLocation;
-@class WKWebView;
 
-typedef enum CT_LOG_LEVEL
+//! Project version number for Clicktale.
+FOUNDATION_EXPORT double ClicktaleVersionNumber;
+
+//! Project version string for Clicktale.
+FOUNDATION_EXPORT const unsigned char ClicktaleVersionString[];
+
+// In this header, you should import all the public headers of your framework using statements like #import <Clicktale/PublicHeader.h>
+
+/**
+ Execute Swift code that could generate an Objective-C exception in here to catch and handle it gracefully (ie don't crash)
+ 
+ @param tryBlock Block/Closure to execute that could thrown an Objective-C exception
+ @param catchBlock Block/Closure to use if an exception is thrown in the tryBlock
+ @param finallyBlock Block/Closure to execute after the tryBlock (or catchBlock if an exception was thrown)
+ 
+ @note Loosely based on the code here: https://stackoverflow.com/a/35003095/144857 and here: https://github.com/williamFalcon/SwiftTryCatch
+ */
+NS_INLINE void ct_try_objc(void(^_Nonnull tryBlock)(void), void(^_Nonnull catchBlock)(NSException* _Nonnull exception), void(^_Nonnull finallyBlock)(void)) {
+    @try {
+        tryBlock();
+    }
+    @catch (NSException* exception) {
+        catchBlock(exception);
+    }
+    @finally {
+        finallyBlock();
+    }
+}
+
+/**
+ Throw an Objective-C exception
+ 
+ @param exception NSException object to throw
+ 
+ @note Loosely based on the code here: https://github.com/williamFalcon/SwiftTryCatch
+ */
+NS_INLINE void ct_throw_objc(NSException* _Nonnull exception)
 {
-    CT_LOG_LEVEL_NONE,
-    CT_LOG_LEVEL_WARNING,
-    CT_LOG_LEVEL_INFO,
-    CT_LOG_LEVEL_ALL,
-    CT_LOG_LEVEL_REQUIRED
-}CT_LOG_LEVEL;
+    @throw exception;
+}
 
-
-typedef enum CT_QUALITY
-{
-    CT_QUALITY_LOW,
-    CT_QUALITY_LOW_PLUS,
-    CT_QUALITY_MEDIUM,
-    CT_QUALITY_MEDIUM_PLUS,
-    CT_QUALITY_HIGH,
-    CT_QUALITY_HIGH_PLUS,
-    CT_QUALITY_HD
-}CT_QUALITY;
-
-typedef enum CT_REGION
-{
-    CT_REGION_US,
-    CT_REGION_EU
-}CT_REGION;
-
-
-#define kCTClicktaleBackgroundDataFlushFinish  @"ClicktaleBackgroundDataFlushFinish"
-
-@protocol ClicktaleDelegate <NSObject>
-@optional
-
-/**
- SDK did start running,
- you can now track events and screen recording will start
- */
-- (void) clicktaleDidStart;
-
-/**
- SDK did fail to start
- */
-- (void) clicktaleDidFail;
-
-/**
- Current session ID
- 
- @param currentSessionID  NSString Session ID.
- */
-- (void) clicktaleDidSessionIDCreated:(NSString *)currentSessionID;
-
-/**
- Current session dashboard URL
- 
- @param sessionLink  NSString dashboard URL.
- */
-- (void) clicktaleDidSessionURLCreated:(NSString *)sessionLink;
-
-@end
-
-
-@interface Clicktale : NSObject
-
-#pragma mark - Properties
-#pragma mark ----------------------
-
-@property(nonatomic, strong) NSString *accessKey;
-@property(nonatomic, strong) NSString *secretKey;
-@property(nonatomic, strong) NSString *userID;
-
-@property(nonatomic, readonly) NSString *SDKVersion;
-@property(nonatomic, assign) CT_LOG_LEVEL logLevel;
-@property(nonatomic, assign) int dispatchInterval;
-@property(nonatomic, assign) id<ClicktaleDelegate> delegate;
-
-
-#pragma mark Initialization methods
-#pragma mark ----------------------
-/* Returns the default singleton instance.
- 
- @return Clicktale shared instance
- */
-+ (Clicktale *) sharedInstance;
-
-/**
- *Sets Clicktale Access Key and Secret Key
- *
- *@param access_key NSString Application Access Key.
- *@param secretKey  NSString Application Secret Key.
- 
- @see [Getting Started](http://apps-docs.clicktale.com/ios/getting-started.html)
-
- */
--(void)setAccessKey:(NSString *)access_key secretKey:(NSString *)secretKey;
-
-/**
- Starts SDK to record and track all events.
- 
- @see [Getting Started](http://apps-docs.clicktale.com/ios/getting-started.html)
-
- */
--(void)startClicktale;
-
-
-/**
- *Sets Clicktale Project and Application ID
- *
- *@param projectId      NSNumber Clicktale Project ID.
- *@param applicationId  NSNumber Clicktale Application ID.
- 
- @see [Getting Started](http://apps-docs.clicktale.com/ios/getting-started.html)
- 
- */
--(void)setProjectId:(NSNumber *)projectId applicationId:(NSNumber *)applicationId;
-
-/**
- Starts SDK to record and track all events with the backend endpoint region : US or EU.
- 
- @see [Getting Started](http://apps-docs.clicktale.com/ios/getting-started.html)
- 
- */
--(void)startClicktaleForRegion:(CT_REGION)region;
-
-/**
- Sets a UserID, so you can easily find sessions in the dashboard
- 
- @param userID NSString The custom userID you want to set.
- 
- @see [Using Events](http://apps-docs.clicktale.com/ios/using-events.html)
- 
- */
--(void)setSessionUserID:(NSString *)userID;
-
-/**
- Pause Screen Recording
-
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
-
- */
--(void)pauseScreenRecording;
-
-/**
- Resume Screen Recording
- 
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
-
- */
--(void)resumeScreenRecording;
-
-/**
- Check if screen is Recorded
- 
- @return BOOL is screen recorded
- 
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
-
- */
--(BOOL)isScreenRecorded;
-
-
-#pragma mark Tracking methods
-#pragma mark ----------------------
-
-
-/**
- A custom track page method.
- You have to set the page's name.
- 
- @param name NSString Page name.
- 
- @see [Using Events](http://apps-docs.clicktale.com/ios/using-events.html)
-
- */
--(void)trackPageView:(NSString *)name;
-
-/**
- A simple track event method.
- Log your custom events with this function
- 
- @param event NSString event name.
- 
- @see [Using Events](http://apps-docs.clicktale.com/ios/using-events.html)
-
- */
--(void)trackEvent:(NSString *)event;
-
-/**
- A custom track event method.
- Log your custom events with values with this function
- 
- @param event NSString event name.
- @param value NSString event's value.
- 
- @see [Using Events](http://apps-docs.clicktale.com/ios/using-events.html)
-
- */
--(void)trackEvent:(NSString *)event value:(NSString *)value __attribute__((deprecated("This method is deprecated, Please use trackEvent:")));
-
-/**
- Bind a WKWebView (UIWebView not supported) to SDK in order to receive and track events.
- Use the following JavaScript in your page to trigger events:
- Clicktale.TrackEvent('event name here');
- Clicktale.TrackEventAndValue('event name here','event value here');
- Clicktale.TrackPageView('page name here');
- 
- @param webView WKWebView to bind and recive events from.
- 
- @see [Using Events](http://apps-docs.clicktale.com/ios/using-events.html)
-
- */
--(void)bindWebViewForEventTracking:(WKWebView *)webView;
-
-#pragma mark Privacy methods
-#pragma mark ----------------------
-
-/**
- Start hiding all of the screen
- A Black screen will be showen in the video
- 
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
-
- */
--(void)startHidingScreen;
-
-/**
- Stop Hiding all of the screen
- 
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
-
- */
--(void)stopHidingScreen;
-
-/**
- Check if screen is hidden
- 
- @return BOOL is screen hidden
- 
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
-
- */
--(BOOL)isScreenHidden;
-
-/**
- Start hiding UIView collection
- 
- @param views NSArray array of views you want to hide.
- 
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
-
- */
--(void)startPrivacyForViews:(NSArray <UIView *> *)views;
-
-/**
- Stop hiding UIView collection
- 
- @param views NSArray array of views you want to stop hiding.
- 
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
-
- */
--(void)stopPrivacyForViews:(NSArray <UIView *> *)views;
-
-/**
- Stop hiding All UIView that was added
- 
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
-
- */
--(void)stopPrivacyForAllViews;
-
-/**
- Start hiding WebViews collection (UIWebView Or WKWebView)
- that has elements with ClassName 'ctHidden' and zoom is NOT enabled
- 
- @param views NSArray array of WebViews you want to hide.
- 
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
-
- */
--(void)startPrivacyForWebViews:(NSArray *)views __attribute__((deprecated("The SDK detects webviews automatically")));
-
-/**
- Stop hiding WebViews
- 
- @param views NSArray array of views you want to stop hiding.
- 
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
-
- */
--(void)stopPrivacyForWebViews:(NSArray *)views;
-
-/**
- Stop hiding All WebViews collection
- 
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
-
- */
--(void)stopPrivacyForAllWebViews __attribute__((deprecated("The SDK detects webviews automatically")));
-
-/**
- Stop hiding All UIViews collection you added
- 
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
-
- */
--(void)stopPrivacyForAll;
-
-/**
- Disable auto hiding for selected UITextField, UITextView and SFSafariViewController collection
- 
- @param views NSArray array of UITextField/UITextView you want to show and prevent the sdk from auto hidding.
- 
- @see [Privacy](http://apps-docs.clicktale.com/ios/privacy.html)
- 
- */
--(void)exposeAutoHiddenViews:(NSArray <UIView *> *)views;
-
-
-/**
- Offers the option to opt out \ opt in from being recorded and tracked
- 
- @param isOptOut BOOL flag to set the optout status (default is NO).
-
- */
--(void)setOptOut:(BOOL)isOptOut;
-
-/**
- Get the current optout status (default is NO).
- 
- @return BOOL is user optout
- 
- */
--(BOOL)isOptOut;
-
-#pragma mark Util methods
-#pragma mark ----------------------
-
-
-/**
- Current session dashboard URL
- 
- @return NSString  dashboard URL.
- 
- @see [Data Integrations](http://apps-docs.clicktale.com/integrations/about-integrations.html)
-
- */
--(NSString *)getSessionLink;
-
-/**
- Current session ID
- 
- @return NSString Session ID.
- */
--(NSString *)getSessionID;
-
-/**
- Check for are access keys set.
- 
- @return BOOL is the application access Key set
- */
--(BOOL)isAccessKeysSet;
-
-/**
- SDK has a stopwatch, so it returns current seconds for current session.
- If a session ends, stopwatch will be reset.
- */
--(NSTimeInterval)getRunTime;
-
-/**
- Set Debug Mode on/off
- When debug mode on,the SDK will save videos to Photos Album before uploading it to server
- (1 second after application goes to background)
- 
- @param on BOOL YES- Debug mode on/ NO- Debug mode off - default is NO
- 
- @see [Advanced Features](http://apps-docs.clicktale.com/ios/advanced-features.html)
-
- */
--(void)setDebugMode:(BOOL)on;
-
-
-/**
- Sets Crash reporting off
- Call this method before startClicktale if you don't want
- the SDK to collect crash reports or you use different crash reporting mechanism
- (By default the Crash reporter is on)
- 
- @see [Advanced Features](http://apps-docs.clicktale.com/ios/advanced-features.html)
-
- */
--(void)setCrashReporterOff;
-
-/**
- Sends data to Clicktale in background fetch.
- In order to improve data and video delivery to Clicktale
- you can call this method from background fetch method in your AppDelegate:
- 
- Objective-C:
- - (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler;
-
- Swift:
- optional func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void)
- 
- Be sure to enable background fetching and to check Background fetch in the Capabilities tab, and in addition call:
-
- Objective-C:
- [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
- 
- Swift:
- UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
-
- In your AppDelegate at:
- 
- Objective-C:
- - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
-
- Swift:
- func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-
-
- @param completionHandler The Background Fetch completionHandler you recived from performFetchWithCompletionHandler
- 
- Upon data transfer complete we will call the completion handler.
- If nil is passed instead of the completion handler, Clicktale will not call it and then you should call the completionHandler yourself,
- Clicktale will post a notification upon finish of the logic. Notification name is kCTClicktaleBackgroundDataFlushFinish.
- 
- @see [Advanced Features](http://apps-docs.clicktale.com/ios/advanced-features.html)
- 
- */
--(void)flushDataInBackgroundWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler;
-
-@end

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-clicktale" version="2.1.10" xmlns="http://apache.org/cordova/ns/plugins/1.0">
+<plugin id="cordova-plugin-clicktale" version="3.0.2" xmlns="http://apache.org/cordova/ns/plugins/1.0">
     <name>ClicktalePlugin</name>
     <description>Clicktale for Apps</description>
     <license>Commercial</license>
@@ -16,6 +16,7 @@
         <header-file src="src/ios/ClicktalePlugin.h" />
         <source-file src="src/ios/ClicktalePlugin.m" />
         <framework src="src/ios/Clicktale.framework" custom="true" embed="true"/>
+        <dependency id="cordova-plugin-add-swift-support" version="1.7.2"/>
     </platform>
     <platform name="android">
         <config-file parent="/*" target="config.xml">

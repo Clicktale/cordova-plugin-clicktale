@@ -1,6 +1,6 @@
 {
   "name": "Clicktale",
-  "version": "2.2.0",
+  "version": "3.0.2",
   "description": "Clicktale for Apps",
   "cordova": {
     "id": "cordova-plugin-clicktale",

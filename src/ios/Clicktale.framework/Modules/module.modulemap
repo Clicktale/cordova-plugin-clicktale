@@ -4,3 +4,8 @@ framework module Clicktale {
   export *
   module * { export * }
 }
+
+module Clicktale.Swift {
+    header "Clicktale-Swift.h"
+    requires objc
+}

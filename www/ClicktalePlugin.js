@@ -1,69 +1,103 @@
+
 /**
  * ClicktalePlugin.js
  *
  * Clicktale Cordova plugin.
  *
- * Author: Omer Blumenkrunz
  */
 
 var exec = require('cordova/exec');
 
-exports.startClicktale = function(accessKey, secretKey, success, error) {
-    exec(success, error, "ClicktalePlugin", "startClicktale", [accessKey,secretKey]);
+//region types
+exports.REGION_EUROPE = "EUROPE";
+exports.REGION_US = "US";
+
+exports.start = function (region, projectId, applicationId, success, error) {
+    exec(success, error, "ClicktalePlugin", "start", [region, projectId, applicationId]);
 };
 
-exports.startClicktaleForRegion = function(projectId, applicationId,region, success, error) {
-       exec(success, error, "ClicktalePlugin", "startClicktaleForRegion", [projectId,applicationId,region]);
-};
 
-exports.setDebugLogLevelOn = function(logLevelOn, success, error) {
-    exec(success, error, "ClicktalePlugin", "setDebugLogLevelOn", [logLevelOn]);
-};
-
-exports.setVideoTestMode = function(videoTestModeOn, success, error) {
-    exec(success, error, "ClicktalePlugin", "setVideoTestMode", [videoTestModeOn]);
-};
-
-exports.setSessionUserID = function(userID, success, error) {
-    exec(success, error, "ClicktalePlugin", "setSessionUserID", [userID]);
-};
-
-exports.setOptOut = function(isOptOut, success, error) {
-    exec(success, error, "ClicktalePlugin", "setOptOut", [isOptOut]);
-};
-
-exports.isOptOut = function(success, error) {
-        exec(success, error, "ClicktalePlugin", "isOptOut", []);
-};
-
-exports.trackEvent = function(eventName, success, error) {
-    exec(success, error, "ClicktalePlugin", "trackEvent", [eventName]);
-};
-
-exports.trackPageView = function(pageName, success, error) {
-    exec(success, error, "ClicktalePlugin", "trackPageView", [pageName]);
-};
-
-exports.startHidingScreen = function(success, error) {
-    exec(success, error, "ClicktalePlugin", "startHidingScreen", []);
-};
-
-exports.stopHidingScreen = function(success, error) {
-    exec(success, error, "ClicktalePlugin", "stopHidingScreen", []);
-};
-
-exports.pauseScreenRecording = function(success, error) {
+exports.pauseScreenRecording = function (success, error) {
     exec(success, error, "ClicktalePlugin", "pauseScreenRecording", []);
 };
 
-exports.resumeScreenRecording = function(success, error) {
+
+exports.resumeScreenRecording = function (success, error) {
     exec(success, error, "ClicktalePlugin", "resumeScreenRecording", []);
 };
 
-exports.getSessionLink = function(success, error) {
-    exec(success, error, "ClicktalePlugin", "getSessionLink", []);
+
+exports.isScreenRecording = function (success, error) {
+    exec(success, error, "ClicktalePlugin", "isScreenRecording", []);
 };
 
-exports.setCrashReporterOff = function(success, error) {
-    exec(success, error, "ClicktalePlugin", "setCrashReporterOff", []);
+
+exports.startPageView = function (pageName, pageTitle, success, error) {
+    exec(success, error, "ClicktalePlugin", "startPageView", [pageName, pageTitle]);
 };
+
+
+exports.addDynamicAction = function (actionName, success, error) {
+    exec(success, error, "ClicktalePlugin", "addDynamicAction", [actionName]);
+};
+
+
+exports.blockScreenRecording = function (success, error) {
+    exec(success, error, "ClicktalePlugin", "blockScreenRecording", []);
+};
+
+
+exports.unblockScreenRecording = function (success, error) {
+    exec(success, error, "ClicktalePlugin", "unblockScreenRecording", []);
+};
+
+
+exports.isScreenRecordingBlocked = function (success, error) {
+    exec(success, error, "ClicktalePlugin", "isScreenRecordingBlocked", []);
+};
+
+
+exports.optOut = function (success, error) {
+    exec(success, error, "ClicktalePlugin", "optOut", []);
+};
+
+
+exports.optIn = function (success, error) {
+    exec(success, error, "ClicktalePlugin", "optIn", []);
+};
+
+
+exports.isOptOut = function (success, error) {
+    exec(success, error, "ClicktalePlugin", "isOptOut", []);
+};
+
+
+exports.getVisitLink = function (success, error) {
+    exec(success, error, "ClicktalePlugin", "getVisitLink", []);
+};
+
+
+exports.getVisitorId = function (success, error) {
+    exec(success, error, "ClicktalePlugin", "getVisitorId", []);
+};
+
+
+exports.getVisitId = function (success, error) {
+    exec(success, error, "ClicktalePlugin", "getVisitId", []);
+};
+
+
+exports.setDebugMode = function (enabled, success, error) {
+    exec(success, error, "ClicktalePlugin", "setDebugMode", [enabled]);
+};
+
+
+exports.saveVideoToDevice = function (enabled, success, error) {
+    exec(success, error, "ClicktalePlugin", "saveVideoToDevice", [enabled]);
+};
+
+exports.useOSLogging = function (enabled, success, error) {
+    exec(success, error, "ClicktalePlugin", "useOSLogging", [enabled]);
+};
+
+

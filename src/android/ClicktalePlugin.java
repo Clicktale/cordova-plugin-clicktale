@@ -7,7 +7,6 @@ import com.clicktale.clicktalesdk.ClicktaleCallback;
 import com.clicktale.clicktalesdk.Region;
 
 import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
@@ -27,48 +26,65 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         android.util.Log.d(TAG, "execute() called with: " + "action = [" + action + "], args = [" + args + "], callbackContext = [" + callbackContext + "]");
         try {
-            if (action.equals("startClicktaleForRegion")) {
-                this.startForRegion(args, callbackContext);
-                return true;
-            } else if (action.equals("setDebugLogLevelOn")) {
-                this.setDevMode(args, callbackContext);
-                return true;
-            } else if (action.equals("setVideoTestMode")) {
-                this.setVideoTestMode(args, callbackContext);
-                return true;
-            } else if (action.equals("setSessionUserID")) {
-                this.setUserID(args, callbackContext);
-                return true;
-            } else if (action.equals("trackEvent")) {
-                this.logEvent(args, callbackContext);
-                return true;
-            } else if (action.equals("trackPageView")) {
-                this.logPageView(args, callbackContext);
-                return true;
-            } else if (action.equals("startHidingScreen")) {
-                this.startHidingScreen(args, callbackContext);
-                return true;
-            } else if (action.equals("stopHidingScreen")) {
-                this.stopHidingScreen(args, callbackContext);
-                return true;
-            } else if (action.equals("pauseScreenRecording")) {
-                this.pauseScreenRecording(args, callbackContext);
-                return true;
-            } else if (action.equals("resumeScreenRecording")) {
-                this.resumeScreenRecording(args, callbackContext);
-                return true;
-            } else if (action.equals("getSessionLink")) {
-                this.getSessionLink(args, callbackContext);
-                return true;
-            } else if (action.equals("setCrashReporterOff")) {
-                this.setCrashReporterOff(args, callbackContext);
-                return true;
-            } else if (action.equals("setOptOut")) {
-                this.setOptOut(args, callbackContext);
-                return true;
-            } else if (action.equals("isOptOut")) {
-                this.isOptOut(callbackContext);
-                return true;
+
+            switch (action) {
+
+                case "start":
+                    this.start(args, callbackContext);
+                    return true;
+                case "pauseScreenRecording":
+                    this.pauseScreenRecording(args, callbackContext);
+                    return true;
+                case "resumeScreenRecording":
+                    this.resumeScreenRecording(args, callbackContext);
+                    return true;
+                case "isScreenRecording":
+                    this.isScreenRecording(callbackContext);
+                    return true;
+                case "startPageView":
+                    this.startPageView(args, callbackContext);
+                    return true;
+                case "addDynamicAction":
+                    this.addDynamicAction(args, callbackContext);
+                    return true;
+                case "blockScreenRecording":
+                    this.blockScreenRecording(callbackContext);
+                    return true;
+                case "unblockScreenRecording":
+                    this.unblockScreenRecording(callbackContext);
+                    return true;
+                case "isScreenRecordingBlocked":
+                    this.isScreenRecordingBlocked(callbackContext);
+                    return true;
+                case "optOut":
+                    this.setOptOut(true, callbackContext);
+                    return true;
+                case "optIn":
+                    this.setOptOut(false, callbackContext);
+                    return true;
+                case "isOptOut":
+                    this.isOptOut(callbackContext);
+                    return true;
+                case "getVisitLink":
+                    this.getVisitLink(callbackContext);
+                    return true;
+                case "getVisitorId":
+                    this.getVisitorId(callbackContext);
+                    return true;
+                case "getVisitId":
+                    this.getVisitId(callbackContext);
+                    return true;
+                case "setDebugMode":
+                    this.setDebugMode(args, callbackContext);
+                    return true;
+                case "saveVideoToDevice":
+                    this.saveVideoToDevice(args, callbackContext);
+                    return true;
+
+                case "useOSLogging":
+
+                    return true;
+
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -78,14 +94,26 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         return false;
     }
 
-    private void startForRegion(final JSONArray args, final CallbackContext callbackContext) {
+    private void start(final JSONArray args, final CallbackContext callbackContext) {
         try {
-            long projectId = args.optLong(0);
-            long applicationId = args.optLong(1);
-            long regionId = args.optLong(2);
+            long projectId = args.optLong(1);
+            long applicationId = args.optLong(2);
 
-            Clicktale.startForRegion(ClicktalePlugin.this.cordova.getActivity(), applicationId, projectId, regionId == 1 ? Region.US : Region.EUROPE);
-            Clicktale.setClicktaleCallback(ClicktalePlugin.this);
+            Region region = Region.EUROPE.name().equals(args.optString(0)) ? Region.EUROPE :
+                    Region.US.name().equals(args.optString(0)) ? Region.US : null;
+
+            if (region == null) {
+                android.util.Log.w(TAG, "Error starting Clicktale with Region: " + String.valueOf(args.optString(0)));
+                return;
+            }
+
+            if (projectId == 0 || applicationId == 0) {
+                android.util.Log.w(TAG, "Error starting Clicktale with applictionId: " + String.valueOf(applicationId) + "and projectId: " + String.valueOf(projectId));
+                return;
+            }
+
+            Clicktale.start(region, projectId, applicationId);
+            Clicktale.addClicktaleCallback(ClicktalePlugin.this);
             callbackContext.success();
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,13 +121,13 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         }
     }
 
-    private void setDevMode(final JSONArray args, final CallbackContext callbackContext) {
+    private void setDebugMode(final JSONArray args, final CallbackContext callbackContext) {
         cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
                     boolean devMode = args.optBoolean(0);
-                    Clicktale.setDevMode(devMode);
+                    Clicktale.setDebugMode(devMode);
                     callbackContext.success();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -109,13 +137,13 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         });
     }
 
-    private void setVideoTestMode(final JSONArray args, final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
+    private void saveVideoToDevice(final JSONArray args, final CallbackContext callbackContext) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
                     boolean videoTest = args.optBoolean(0);
-                    Clicktale.setVideoTestMode(videoTest);
+                    Clicktale.saveVideoToDevice(videoTest);
                     callbackContext.success();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -125,20 +153,20 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         });
     }
 
-    private void setUserID(final JSONArray args, final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
+    private void addDynamicAction(final JSONArray args, final CallbackContext callbackContext) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String userId = args.optString(0, null);
+                    String actionName = args.optString(0, null);
 
-                    if (userId == null) {
-                        Log.e(TAG, "setSessionUserID: invalid user ID");
+                    if (actionName == null) {
+                        Log.e(TAG, "addDynamicAction: invalid actionName name");
                         callbackContext.error(ERROR_CODE_INVALID_ARGS);
                         return;
                     }
 
-                    Clicktale.setUserId(userId);
+                    Clicktale.addDynamicAction(actionName);
                     callbackContext.success();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -148,43 +176,21 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         });
     }
 
-    private void logEvent(final JSONArray args, final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String event = args.optString(0, null);
-
-                    if (event == null) {
-                        Log.e(TAG, "logEvent: invalid event name");
-                        callbackContext.error(ERROR_CODE_INVALID_ARGS);
-                        return;
-                    }
-
-                    Clicktale.logEvent(event);
-                    callbackContext.success();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    callbackContext.error(ERROR_CODE_UNKNOWN_ERROR);
-                }
-            }
-        });
-    }
-
-    private void logPageView(final JSONArray args, final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
+    private void startPageView(final JSONArray args, final CallbackContext callbackContext) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
                     String pageName = args.optString(0, null);
+                    String pageTitle = args.optString(1, null);
 
                     if (pageName == null) {
-                        Log.e(TAG, "trackPageView: invalid page name");
+                        Log.e(TAG, "startPageView: invalid page name");
                         callbackContext.error(ERROR_CODE_INVALID_ARGS);
                         return;
                     }
 
-                    Clicktale.logPageView(pageName);
+                    Clicktale.startPageView(pageName, pageTitle);
                     callbackContext.success();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -194,12 +200,12 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         });
     }
 
-    private void startHidingScreen(final JSONArray args, final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
+    private void blockScreenRecording(final CallbackContext callbackContext) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Clicktale.startHidingScreen();
+                    Clicktale.blockScreenRecording();
                     callbackContext.success();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -209,12 +215,12 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         });
     }
 
-    private void stopHidingScreen(final JSONArray args, final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
+    private void unblockScreenRecording(final CallbackContext callbackContext) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Clicktale.stopHidingScreen();
+                    Clicktale.unblockScreenRecording();
                     callbackContext.success();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -225,7 +231,7 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
     }
 
     private void pauseScreenRecording(final JSONArray args, final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
+        cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -240,7 +246,7 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
     }
 
     private void resumeScreenRecording(final JSONArray args, final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
+        cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -254,12 +260,40 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         });
     }
 
-    private void getSessionLink(final JSONArray args, final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
+    private void isScreenRecording(final CallbackContext callbackContext) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String link = Clicktale.getSessionLink();
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, Clicktale.isScreenRecording()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    callbackContext.error(ERROR_CODE_UNKNOWN_ERROR);
+                }
+            }
+        });
+    }
+
+    private void isScreenRecordingBlocked(final CallbackContext callbackContext) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, Clicktale.isScreenRecordingBlocked()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    callbackContext.error(ERROR_CODE_UNKNOWN_ERROR);
+                }
+            }
+        });
+    }
+
+    private void getVisitLink(final CallbackContext callbackContext) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String link = Clicktale.getVisitLink();
                     callbackContext.success(link);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -269,13 +303,14 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         });
     }
 
-    private void setCrashReporterOff(final JSONArray args, final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
+    private void getVisitorId(final CallbackContext callbackContext) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Clicktale.setCrashReporterOff();
-                    callbackContext.success();
+                    long visitorId = Clicktale.getVisitorId();
+                    String id = String.valueOf(visitorId);
+                    callbackContext.success(id);
                 } catch (Exception e) {
                     e.printStackTrace();
                     callbackContext.error(ERROR_CODE_UNKNOWN_ERROR);
@@ -284,12 +319,32 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
         });
     }
 
-    private void setOptOut(final JSONArray args, final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
+    private void getVisitId(final CallbackContext callbackContext) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Clicktale.setOptOut(args.getBoolean(0));
+                    String id = String.valueOf(Clicktale.getVisitId());
+                    callbackContext.success(id);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    callbackContext.error(ERROR_CODE_UNKNOWN_ERROR);
+                }
+            }
+        });
+    }
+
+    private void setOptOut(final boolean isOptOut, final CallbackContext callbackContext) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Clicktale.setOptOutState(isOptOut);
+
+                    if (!isOptOut) {
+                        Clicktale.addClicktaleCallback(ClicktalePlugin.this);
+                    }
+
                     callbackContext.success();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -300,11 +355,11 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
     }
 
     private void isOptOut(final CallbackContext callbackContext) {
-        cordova.getThreadPool().execute(new Runnable() {
+        cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, Clicktale.isOptOut()));
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, Clicktale.getOptOutState()));
                 } catch (Exception e) {
                     e.printStackTrace();
                     callbackContext.error(ERROR_CODE_UNKNOWN_ERROR);
@@ -324,35 +379,45 @@ public class ClicktalePlugin extends CordovaPlugin implements ClicktaleCallback 
     }
 
     @Override
-    public void onSessionURLCreated(String sessionLink) {
-        if (sessionLink == null || isDestroyed) {
+    public void visitStartedSuccessfully(String visitLink, long visitId) {
+        if (visitLink == null || isDestroyed) {
             return;
         }
         HashMap<String, String> map = new HashMap<String, String>();
-        map.put("URL", sessionLink);
+        map.put("visitLink", visitLink);
+        map.put("visitId", String.valueOf(visitId));
         JSONObject _json = new JSONObject(map);
 
         final String json = _json.toString();
         webView.getView().post(new Runnable() {
             public void run() {
-                webView.loadUrl("javascript:cordova.fireDocumentEvent('onClicktaleSessionURLCreated'," + json + ");");
+                webView.loadUrl("javascript:cordova.fireDocumentEvent('visitStartedSuccessfully'," + json + ");");
             }
         });
     }
 
     @Override
-    public void onSessionIDCreated(String sessionID) {
-        if (sessionID == null || isDestroyed) {
+    public void visitFailed() {
+        webView.getView().post(new Runnable() {
+            public void run() {
+                webView.loadUrl("javascript:cordova.fireDocumentEvent('visitFailed', {});");
+            }
+        });
+    }
+
+    @Override
+    public void visitEnded(long visitId) {
+        if (isDestroyed) {
             return;
         }
         HashMap<String, String> map = new HashMap<String, String>();
-        map.put("SessionID", sessionID);
+        map.put("visitId", String.valueOf(visitId));
         JSONObject _json = new JSONObject(map);
 
         final String json = _json.toString();
         webView.getView().post(new Runnable() {
             public void run() {
-                webView.loadUrl("javascript:cordova.fireDocumentEvent('onClicktaleSessionIDCreated'," + json + ");");
+                webView.loadUrl("javascript:cordova.fireDocumentEvent('visitEnded'," + json + ");");
             }
         });
     }
